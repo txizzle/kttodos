@@ -5,6 +5,13 @@ Session.setDefault(EDITING_KEY, false);
 var firstRender = true;
 var listRenderHold = LaunchScreen.hold();
 listFadeInHold = null;
+var veryLastRank = 0;
+
+SimpleRationalRanks = {
+  beforeFirst: function (firstRank) { return firstRank - 1; },
+  between: function (beforeRank, afterRank) { return (beforeRank + afterRank) / 2; },
+  afterLast: function (lastRank) { return lastRank + 1; }
+};
 
 Template.listsShow.onRendered(function() {
   if (firstRender) {
@@ -42,7 +49,7 @@ Template.listsShow.helpers({
   },
 
   todos: function(listId) {
-    return Todos.find({listId: listId}, {sort: {createdAt : -1}});
+    return Todos.find({listId: listId}, {sort: {rank : 1}});
   }
 });
 
@@ -174,9 +181,34 @@ Template.listsShow.events({
       checked: false,
       createdAt: new Date(),
       owner: Meteor.userId(),
-      username: Meteor.user().username
+      username: Meteor.user().username,
+      rank: veryLastRank
     });
+    veryLastRank += 1;
     Lists.update(this._id, {$inc: {incompleteCount: 1}});
     $input.val('');
   }
 });
+
+Template.listsShow.rendered = function () {
+  $(this.find('.list-items')).sortable({ // uses the 'sortable' interaction from jquery ui
+    stop: function (event, ui) { // fired when an item is dropped
+      var el = ui.item.get(0), before = ui.item.prev().get(0), after = ui.item.next().get(0);
+
+      var newRank;
+      if (!before) { // moving to the top of the list
+        newRank = SimpleRationalRanks.beforeFirst(UI.getElementData(after).rank);
+
+      } else if (!after) { // moving to the bottom of the list
+        newRank = SimpleRationalRanks.afterLast(UI.getElementData(before).rank);
+        veryLastRank = newRank;
+      } else {
+        newRank = SimpleRationalRanks.between(
+          UI.getElementData(before).rank,
+          UI.getElementData(after).rank);
+      }
+
+      Todos.update(UI.getElementData(el)._id, {$set: {rank: newRank}});
+    }
+  });
+};
