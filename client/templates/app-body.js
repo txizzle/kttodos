@@ -9,6 +9,15 @@ Session.setDefault(SHOW_CONNECTION_ISSUE_KEY, false);
 
 var CONNECTION_ISSUE_TIMEOUT = 5000;
 
+var veryLastListRank = 1;
+// search lists db for very last last rank
+
+SimpleRationalRanks = {
+  beforeFirst: function (firstRank) { return firstRank - 1; },
+  between: function (beforeRank, afterRank) { return (beforeRank + afterRank) / 2; },
+  afterLast: function (lastRank) { return lastRank + 1; }
+};
+
 Meteor.startup(function () {
   // set up a swipe left / right handler
   $(document.body).touchwipe({
@@ -73,7 +82,7 @@ Template.appBody.helpers({
     return Session.get(USER_MENU_KEY);
   },
   lists: function() {
-    return Lists.find();
+    return Lists.find({}, {sort: {rank : 1}});
   },
   activeListClass: function() {
     var current = Router.current();
@@ -121,9 +130,34 @@ Template.appBody.events({
   },
 
   'click .js-new-list': function() {
-    var list = {name: Lists.defaultName(), incompleteCount: 0};
+    var list = {name: Lists.defaultName(), incompleteCount: 0, rank: veryLastListRank};
     list._id = Lists.insert(list);
+    console.log(veryLastListRank);
+    veryLastListRank += 1;
 
     Router.go('listsShow', list);
   }
 });
+
+Template.appBody.rendered = function () {
+  $(this.find('.list-todos')).sortable({ // uses the 'sortable' interaction from jquery ui
+    stop: function (event, ui) { // fired when an item is dropped
+      var el = ui.item.get(0), before = ui.item.prev().get(0), after = ui.item.next().get(0);
+
+      var newRank;
+      if (!before) { // moving to the top of the list
+        newRank = SimpleRationalRanks.beforeFirst(UI.getElementData(after).rank);
+
+        newRank = SimpleRationalRanks.afterLast(UI.getElementData(before).rank);
+        veryLastRank = newRank;
+      } else {
+        newRank = SimpleRationalRanks.between(
+          UI.getElementData(before).rank,
+          UI.getElementData(after).rank);
+      }
+
+      Lists.update(UI.getElementData(el)._id, {$set: {rank: newRank}});
+      console.log(newRank);
+    }
+  });
+};

@@ -2,15 +2,16 @@
 Meteor.startup(function () {
   if (Lists.find().count() === 0) {
     var data = [
-      {name: "New List",
-       items: []
+      {name: "First List",
+       items: [],
+       rank: 0
       }
     ];
 
     var timestamp = (new Date()).getTime();
     _.each(data, function(list) {
       var list_id = Lists.insert({name: list.name,
-        incompleteCount: list.items.length});
+        incompleteCount: list.items.length, rank: list.rank});
 
       _.each(list.items, function(text) {
         Todos.insert({listId: list_id,
