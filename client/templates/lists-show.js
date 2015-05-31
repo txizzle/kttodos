@@ -5,7 +5,7 @@ Session.setDefault(EDITING_KEY, false);
 var firstRender = true;
 var listRenderHold = LaunchScreen.hold();
 listFadeInHold = null;
-var veryLastRank = 0;
+var veryLastRank = 0; //we need to instead search list to find max rank
 
 SimpleRationalRanks = {
   beforeFirst: function (firstRank) { return firstRank - 1; },

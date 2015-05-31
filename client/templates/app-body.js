@@ -148,6 +148,7 @@ Template.appBody.rendered = function () {
       if (!before) { // moving to the top of the list
         newRank = SimpleRationalRanks.beforeFirst(UI.getElementData(after).rank);
 
+      } else if (!after) { // moving to the bottom of the list
         newRank = SimpleRationalRanks.afterLast(UI.getElementData(before).rank);
         veryLastRank = newRank;
       } else {
