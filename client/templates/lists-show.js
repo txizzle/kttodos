@@ -6,7 +6,7 @@ var firstRender = true;
 var listRenderHold = LaunchScreen.hold();
 listFadeInHold = null;
 var veryLastRank = 0; //we need to instead search list to find max rank
-
+console.log(veryLastRank);
 SimpleRationalRanks = {
   beforeFirst: function (firstRank) { return firstRank - 1; },
   between: function (beforeRank, afterRank) { return (beforeRank + afterRank) / 2; },
@@ -173,7 +173,8 @@ Template.listsShow.events({
     if (! Meteor.user()) {
       return alert("Please sign in or create an account to add an item!");
     }
-    
+    veryLastRank = Todos.find().count();
+    console.log(veryLastRank);
     //console.log(Meteor.user());
     Todos.insert({
       listId: this._id,

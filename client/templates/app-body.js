@@ -9,7 +9,7 @@ Session.setDefault(SHOW_CONNECTION_ISSUE_KEY, false);
 
 var CONNECTION_ISSUE_TIMEOUT = 5000;
 
-var veryLastListRank = 1;
+var veryLastListRank = Lists.find().count();
 // search lists db for very last last rank
 
 SimpleRationalRanks = {
